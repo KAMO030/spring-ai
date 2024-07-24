@@ -17,9 +17,6 @@ package org.springframework.ai.autoconfigure.vertexai.gemini;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.vertexai.VertexAI;
@@ -82,15 +79,11 @@ public class VertexAiGeminiAutoConfiguration {
 
 		FunctionCallbackContext functionCallbackContext = springAiFunctionManager(context);
 
-		VertexAiGeminiChatModel chatModel = new VertexAiGeminiChatModel(vertexAi, chatProperties.getOptions(), functionCallbackContext);
-
 		if (!CollectionUtils.isEmpty(toolFunctionCallbacks)) {
-			Map<String, FunctionCallback> toolFunctionCallbackMap = toolFunctionCallbacks.stream()
-					.collect(Collectors.toMap(FunctionCallback::getName, Function.identity(), (a, b) -> b));
-			chatModel.getFunctionCallbackRegister().putAll(toolFunctionCallbackMap);
+			chatProperties.getOptions().getFunctionCallbacks().addAll(toolFunctionCallbacks);
 		}
 
-		return chatModel;
+		return new VertexAiGeminiChatModel(vertexAi, chatProperties.getOptions(), functionCallbackContext);
 	}
 
 	/**

@@ -16,9 +16,6 @@
 package org.springframework.ai.autoconfigure.openai;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.ai.autoconfigure.retry.SpringAiRetryAutoConfiguration;
 import org.springframework.ai.model.function.FunctionCallback;
@@ -76,13 +73,12 @@ public class OpenAiAutoConfiguration {
 		var openAiApi = openAiApi(chatProperties.getBaseUrl(), commonProperties.getBaseUrl(),
 				chatProperties.getApiKey(), commonProperties.getApiKey(), restClientBuilder, webClientBuilder,
 				responseErrorHandler, "chat");
-		OpenAiChatModel chatModel = new OpenAiChatModel(openAiApi, chatProperties.getOptions(), functionCallbackContext, retryTemplate);
+
 		if (!CollectionUtils.isEmpty(toolFunctionCallbacks)) {
-			Map<String, FunctionCallback> toolFunctionCallbackMap = toolFunctionCallbacks.stream().collect(Collectors.toMap(FunctionCallback::getName, Function.identity(), (a, b) -> b));
-			chatModel.getFunctionCallbackRegister().putAll(toolFunctionCallbackMap);
+			chatProperties.getOptions().getFunctionCallbacks().addAll(toolFunctionCallbacks);
 		}
 
-		return chatModel;
+		return new OpenAiChatModel(openAiApi, chatProperties.getOptions(), functionCallbackContext, retryTemplate);
 	}
 
 	@Bean
